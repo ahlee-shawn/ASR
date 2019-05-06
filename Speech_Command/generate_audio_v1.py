@@ -62,7 +62,7 @@ def inference(sess,data,output_tensor):
 
 def gen_attack(sess,data,label,output_tensor,target):
 	max_iteration = 1000
-	pop_size = 20
+	pop_size = 50
 	elite_size = 3
 	global effect_bit
 	#generate the first population
