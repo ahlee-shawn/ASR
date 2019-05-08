@@ -8,7 +8,7 @@ def load_graph(path):
 	with open(path, 'rb') as f:
 		graph_def.ParseFromString(f.read())
 		tf.import_graph_def(graph_def,name = '')
-			
+
 def load_labels(path):
 	"""Read in labels, one label per line."""
 	return [line.rstrip() for line in tf.gfile.GFile(path)]
@@ -19,7 +19,7 @@ def load_wav(path):
 	return data
 
 def store_wav(path,data):
-	with open(path,'wb') as f:
+	with open(path,'wb+') as f:
 		new_data = bytes(data)
 		f.write(new_data)
 
@@ -142,8 +142,6 @@ def gen_attack(sess,data,label,output_tensor,target):
 			next_generation[i] = mutation(next_generation[i])
 
 		population = next_generation
-
-
 
 if __name__ == '__main__':
 	flags = tf.flags
