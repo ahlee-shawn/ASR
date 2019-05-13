@@ -21,7 +21,7 @@ def main():
 				source_label = label[i]
 				search_dir = search_root + "/" + source_label
 				file_list = np.asarray(os.listdir(search_dir))[: 10]
-				for k in range(iteration[i][j] + 1, 10):
+				for k in range(iteration[i][j], 10):
 					print("i = {}\tj = {}\tk = {}".format(i, j, k))
 					input_path = search_dir + "/" + file_list[k]
 					target_label = label[j]
