@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import sys
 
 effect_bit = 3
 
@@ -61,87 +62,90 @@ def inference(sess,data,output_tensor):
 	return predict_result
 
 def gen_attack(sess,data,label,output_tensor,target):
-	max_iteration = 1000
-	pop_size = 50
-	elite_size = 3
-	global effect_bit
-	#generate the first population
-	population = []
-	for i in range(pop_size):
-		population.append(generate_first_population(data))
+	try:
+		max_iteration = 1000
+		pop_size = 50
+		elite_size = 3
+		global effect_bit
+		#generate the first population
+		population = []
+		for i in range(pop_size):
+			population.append(generate_first_population(data))
 
-	number_of_no_change = 0
-	prev = 0
+		number_of_no_change = 0
+		prev = 0
 
-	for iter in range(max_iteration+1):
-		score = []
-		target_scores = []
-		maximun_liklelihood = []
-		#for every population
-		for now_index in population:
-			#get the score output from the model
-			model_output = inference(sess,now_index,output_tensor)
-			score.append(model_output)
+		for iter in range(max_iteration+1):
+			score = []
+			target_scores = []
+			maximun_liklelihood = []
+			#for every population
+			for now_index in population:
+				#get the score output from the model
+				model_output = inference(sess,now_index,output_tensor)
+				score.append(model_output)
+				
+				#store the score of target of this population in this iteration
+				target_scores.append(model_output[target])
+				#get the prediction of this population
+				predict_result = model_output.argsort()[-1]
+				maximun_liklelihood.append(predict_result)
 			
-			#store the score of target of this population in this iteration
-			target_scores.append(model_output[target])
-			#get the prediction of this population
-			predict_result = model_output.argsort()[-1]
-			maximun_liklelihood.append(predict_result)
-		
-		#get the first k population which has highest target score ,k = elite_size  
-		elite_set = np.array(target_scores).argsort()[-elite_size:][::-1]
-		
-		#if the result doesn't change for 20 times, let the effected bits more
-		if iter > 0:
-			if prev == maximun_liklelihood[elite_set[0]]:
-				number_of_no_change = number_of_no_change + 1
-			else:
-				number_of_no_change = 0
-		if number_of_no_change > 20 and effect_bit < 8:
-			effect_bit = effect_bit + 1
-		
-		prev = maximun_liklelihood[elite_set[0]]
-		
-		print("target label index:  %d" %(target))
-		print("The predict result of target top 1 score population:  %d" %(maximun_liklelihood[elite_set[0]]))
-		print("score of the predict result of target top 1 score population:  " ,end = '')
-		print(score[elite_set[0]][maximun_liklelihood[elite_set[0]]])
-		print("target top 1 score:  ",end = '')
-		print(target_scores[elite_set[0]])
-		print('')
-		
-		#if there is one population prediction result = target => success
-		for i in range(len(maximun_liklelihood)):
-			if maximun_liklelihood[i] == target:
-				print("success")
-				return population[i]
-		if iter == max_iteration:
-			print("fail")
-			return population[elite_set[0]]
-		
-		#calculate the selection probability
-		sum_of_target_score = 0.0
-		for i in target_scores:
-			sum_of_target_score = sum_of_target_score + i
-		selection_prob = []
-		for i in target_scores:
-			selection_prob.append(i/sum_of_target_score)
-		#use crossover to generate next generation
-		next_generation = []
-		for i in range(pop_size-elite_size):
-			father = np.random.choice(pop_size, p = selection_prob)
-			mother = np.random.choice(pop_size, p = selection_prob)
-			child = crossover(population[father], population[mother])
-			next_generation.append(child)
-		#elite set must be in next generation
-		for i in elite_set:
-			next_generation.append(population[i])
-		#mutation
-		for i in range(len(next_generation)):
-			next_generation[i] = mutation(next_generation[i])
+			#get the first k population which has highest target score ,k = elite_size  
+			elite_set = np.array(target_scores).argsort()[-elite_size:][::-1]
+			
+			#if the result doesn't change for 20 times, let the effected bits more
+			if iter > 0:
+				if prev == maximun_liklelihood[elite_set[0]]:
+					number_of_no_change = number_of_no_change + 1
+				else:
+					number_of_no_change = 0
+			if number_of_no_change > 20 and effect_bit < 8:
+				effect_bit = effect_bit + 1
+			
+			prev = maximun_liklelihood[elite_set[0]]
+			
+			print("target label index:  %d" %(target))
+			print("The predict result of target top 1 score population:  %d" %(maximun_liklelihood[elite_set[0]]))
+			print("score of the predict result of target top 1 score population:  " ,end = '')
+			print(score[elite_set[0]][maximun_liklelihood[elite_set[0]]])
+			print("target top 1 score:  ",end = '')
+			print(target_scores[elite_set[0]])
+			print('')
+			
+			#if there is one population prediction result = target => success
+			for i in range(len(maximun_liklelihood)):
+				if maximun_liklelihood[i] == target:
+					print("success")
+					return population[i], 1
+			if iter == max_iteration:
+				print("fail")
+				return population[elite_set[0]], 0
+			
+			#calculate the selection probability
+			sum_of_target_score = 0.0
+			for i in target_scores:
+				sum_of_target_score = sum_of_target_score + i
+			selection_prob = []
+			for i in target_scores:
+				selection_prob.append(i/sum_of_target_score)
+			#use crossover to generate next generation
+			next_generation = []
+			for i in range(pop_size-elite_size):
+				father = np.random.choice(pop_size, p = selection_prob)
+				mother = np.random.choice(pop_size, p = selection_prob)
+				child = crossover(population[father], population[mother])
+				next_generation.append(child)
+			#elite set must be in next generation
+			for i in elite_set:
+				next_generation.append(population[i])
+			#mutation
+			for i in range(len(next_generation)):
+				next_generation[i] = mutation(next_generation[i])
 
-		population = next_generation
+			population = next_generation
+	except KeyboardInterrupt:
+		sys.exit(2)
 
 if __name__ == '__main__':
 	flags = tf.flags
@@ -165,8 +169,9 @@ if __name__ == '__main__':
 	output_tensor = tf.get_default_graph().get_tensor_by_name("labels_softmax:0")
 
 	with tf.Session() as sess:
-		new_audio = gen_attack(sess,data,label,output_tensor,target_label)
+		new_audio, exit_code = gen_attack(sess,data,label,output_tensor,target_label)
 		store_wav(FLAGS.new_wav_path,new_audio)
+		sys.exit(exit_code)
 
 
 	
