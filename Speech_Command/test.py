@@ -14,10 +14,9 @@ def main():
 	label = np.asarray(["yes", "no", "up", "down", "left", "right", "on", "off", "stop", "go"])
 	search_root="/home/leeanghsuan/Desktop/speech_dataset"
 
-	stop = 0
 	for i in range(0, 10):
 		for j in range(0, 10):
-			if i != j and stop == 0:
+			if i != j:
 				source_label = label[i]
 				search_dir = search_root + "/" + source_label
 				file_list = np.asarray(os.listdir(search_dir))[: 10]
