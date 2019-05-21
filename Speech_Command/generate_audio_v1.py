@@ -78,7 +78,7 @@ def gen_attack(sess,data,label,output_tensor,target):
 		for iter in range(max_iteration+1):
 			score = []
 			target_scores = []
-			maximun_liklelihood = []
+			maximum_liklelihood = []
 			#for every population
 			for now_index in population:
 				#get the score output from the model
@@ -89,33 +89,30 @@ def gen_attack(sess,data,label,output_tensor,target):
 				target_scores.append(model_output[target])
 				#get the prediction of this population
 				predict_result = model_output.argsort()[-1]
-				maximun_liklelihood.append(predict_result)
+				maximum_liklelihood.append(predict_result)
 			
 			#get the first k population which has highest target score ,k = elite_size  
 			elite_set = np.array(target_scores).argsort()[-elite_size:][::-1]
 			
 			#if the result doesn't change for 20 times, let the effected bits more
 			if iter > 0:
-				if prev == maximun_liklelihood[elite_set[0]]:
+				if prev == maximum_liklelihood[elite_set[0]]:
 					number_of_no_change = number_of_no_change + 1
 				else:
 					number_of_no_change = 0
 			if number_of_no_change > 20 and effect_bit < 8:
 				effect_bit = effect_bit + 1
 			
-			prev = maximun_liklelihood[elite_set[0]]
+			prev = maximum_liklelihood[elite_set[0]]
 			
 			print("target label index:  %d" %(target))
-			print("The predict result of target top 1 score population:  %d" %(maximun_liklelihood[elite_set[0]]))
-			print("score of the predict result of target top 1 score population:  " ,end = '')
-			print(score[elite_set[0]][maximun_liklelihood[elite_set[0]]])
-			print("target top 1 score:  ",end = '')
-			print(target_scores[elite_set[0]])
-			print('')
+			print("The predict result of target top 1 score population:  %d" %(maximum_liklelihood[elite_set[0]]))
+			print("score of the predict result of target top 1 score population:  {}".format(score[elite_set[0]][maximum_liklelihood[elite_set[0]]]))
+			print("target top 1 score:  {}\n".format(target_scores[elite_set[0]]))
 			
 			#if there is one population prediction result = target => success
-			for i in range(len(maximun_liklelihood)):
-				if maximun_liklelihood[i] == target:
+			for i in range(len(maximum_liklelihood)):
+				if maximum_liklelihood[i] == target:
 					print("success")
 					return population[i], 1
 			if iter == max_iteration:
