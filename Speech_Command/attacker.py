@@ -2,13 +2,14 @@ import tensorflow as tf
 import numpy as np
 
 class Attacker():
-	def __init__(self, sess, data, label, outputTensor, targetLabel, effectBit = 3):
+	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, effectBit = 3):
 		self.sess = sess
 		self.data = data
 		self.label = label
 		self.outputTensor = outputTensor
 		self.targetLabel = targetLabel
 		self.effectBit = effectBit
+		np.random.seed(pId)
 
 	def generate_first_population(self):
 		newBytesArray = bytearray(self.data)
@@ -113,7 +114,7 @@ class Attacker():
 		selectionProb = self.targetScore/np.sum(self.targetScore)	
 		return selectionProb
 
-	def run(self):
+	def run(self,quit):
 		self.maxIteration = 1000
 		self.populationSize = 50
 		self.eliteSize = 3
@@ -126,6 +127,9 @@ class Attacker():
 		self.resultOfPrevBest = 0
 
 		for iteration in range(self.maxIteration+1):
+			if quit.is_set():
+				break
+
 			self.calaulate_fitness()
 
 			#get the first k population which has highest target score ,k = elite size  
