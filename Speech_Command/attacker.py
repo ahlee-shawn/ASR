@@ -20,7 +20,7 @@ class Attacker():
 				effectPart = newBytesArray[i+1] % (2**self.effectBit)
 				plusNoise = effectPart ^ noise
 				newBytesArray[i+1] = newBytesArray[i+1] - effectPart + plusNoise
-	            		
+				
 		return bytes(newBytesArray)
 	    
 	def _crossover(self,father,mother):
@@ -62,13 +62,10 @@ class Attacker():
 
 		return nextGeneration
 
-
-
 	def inference(self,currentOffspring):
 		#input into model to get score
 		predictResult = self.sess.run(self.outputTensor, feed_dict = {"wav_data:0": currentOffspring})
 		return predictResult[0]
-
 
 	def calaulate_fitness(self):
 		self.score = []
