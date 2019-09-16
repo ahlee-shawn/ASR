@@ -13,7 +13,6 @@ class Attacker():
 
 	def generate_first_population(self):
 		newBytesArray = bytearray(self.data)
-
 		#plus random noise for every two bytes when np.random.rand() < 0.0005, 44 is the header length of wav file
 		for i in range(44,len(newBytesArray),2):
 			if np.random.rand() < 0.0005:
@@ -47,7 +46,6 @@ class Attacker():
 
 	def _mutation(self, currentOffspring):
 		newBytesArray = bytearray(currentOffspring)
-
 		#plus random noise for every two bytes when np.random.rand() < 0.0005, 44 is the header length of wav file
 		for i in range(44,len(newBytesArray),2):
 			if np.random.rand() < 0.0005:
@@ -68,8 +66,8 @@ class Attacker():
 
 	def inference(self,currentOffspring):
 		#input into model to get score
-			predictResult = self.sess.run(self.outputTensor, feed_dict = {"wav_data:0": currentOffspring})
-			return predictResult[0]
+		predictResult = self.sess.run(self.outputTensor, feed_dict = {"wav_data:0": currentOffspring})
+		return predictResult[0]
 
 
 	def calaulate_fitness(self):
@@ -127,6 +125,7 @@ class Attacker():
 		self.resultOfPrevBest = 0
 
 		for iteration in range(self.maxIteration+1):
+			#One process has found the answer
 			if quit.is_set():
 				break
 
