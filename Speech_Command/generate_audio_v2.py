@@ -11,7 +11,7 @@ def worker(i, quit, foundit,data,label,outputTensor,targetLabel,newWavPath):
 	config.gpu_options.allow_growth = True
 	with tf.Session(config=config) as sess:
 		#newAudio = gen_attack(sess,data,label,outputTensor,targetLabel)
-		attack = Attacker(sess,data,label,outputTensor,targetLabel,os.getpid())
+		attack = Attacker(sess, data, label, outputTensor, targetLabel, os.getpid(), i)
 		newAudio = attack.run(quit)
 		foundit.set()
 		if newAudio != None:
@@ -21,11 +21,11 @@ def worker(i, quit, foundit,data,label,outputTensor,targetLabel,newWavPath):
 
 if __name__ == '__main__':
 	flags = tf.flags
-	flags.DEFINE_string("wavPath","0a2b400e_nohash_0.wav","the source wav path")
-	flags.DEFINE_string("graphPath","my_frozen_graph.pb","the attacked Graph path")
-	flags.DEFINE_string("newWavPath","new_version_para.wav","the new wav path")
-	flags.DEFINE_string("labelPath","conv_labels.txt","label path")
-	flags.DEFINE_string("target","yes","the target")
+	flags.DEFINE_string("wavPath", "0a2b400e_nohash_0.wav", "the source wav path")
+	flags.DEFINE_string("graphPath", "my_frozen_graph.pb", "the attacked Graph path")
+	flags.DEFINE_string("newWavPath", "new_version_para.wav", "the new wav path")
+	flags.DEFINE_string("labelPath", "conv_labels.txt", "label path")
+	flags.DEFINE_string("target", "yes", "the target")
 	FLAGS = flags.FLAGS
 
 	data = load_wav(FLAGS.wavPath)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 	quit = mp.Event()
 	foundit = mp.Event()
 	for i in range(mp.cpu_count()):
-		p = mp.Process(target=worker, args=(i, quit, foundit,data,label,outputTensor,targetLabel,FLAGS.newWavPath))
+		p = mp.Process(target=worker, args=(i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath))
 		p.start()
 	foundit.wait()
 	quit.set()

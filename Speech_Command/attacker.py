@@ -2,13 +2,14 @@ import tensorflow as tf
 import numpy as np
 
 class Attacker():
-	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, effectBit = 3):
+	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processNumber, effectBit = 3):
 		self.sess = sess
 		self.data = data
 		self.label = label
 		self.outputTensor = outputTensor
 		self.targetLabel = targetLabel
 		self.effectBit = effectBit
+		self.processNumber = processNumber
 		np.random.seed(pId)
 
 	def generate_first_population(self):
@@ -23,7 +24,7 @@ class Attacker():
 				
 		return bytes(newBytesArray)
 	    
-	def _crossover(self,father,mother):
+	def _crossover(self, father, mother):
 		father = bytearray(father)
 		mother = bytearray(mother)
 		#let mother's byte = father's byte at 50%
@@ -33,15 +34,20 @@ class Attacker():
 
 		return bytes(mother)
 
-	def crossover(self,selectionProb):
+	def crossover(self, selectionProb):
 		nextGeneration = []
-		for i in range(self.populationSize-self.eliteSize):
+		nextGenerationMtDNA = []
+		i = 0
+		while(i < self.populationSize-self.eliteSize):
 			father_idx = np.random.choice(self.populationSize, p = selectionProb)
 			mother_idx = np.random.choice(self.populationSize, p = selectionProb)
-			child = self._crossover(self.population[father_idx], self.population[mother_idx])
-			nextGeneration.append(child)
+			if self.mtDNA[father_idx] != self.mtDNA[mother_idx]:
+				child = self._crossover(self.population[father_idx], self.population[mother_idx])
+				nextGeneration.append(child)
+				nextGenerationMtDNA.append(self.mtDNA[mother_idx])
+				i += 1
 
-		return nextGeneration
+		return nextGeneration, nextGenerationMtDNA
 		
 
 	def _mutation(self, currentOffspring):
@@ -62,7 +68,7 @@ class Attacker():
 
 		return nextGeneration
 
-	def inference(self,currentOffspring):
+	def inference(self, currentOffspring):
 		#input into model to get score
 		predictResult = self.sess.run(self.outputTensor, feed_dict = {"wav_data:0": currentOffspring})
 		return predictResult[0]
@@ -83,7 +89,7 @@ class Attacker():
 
 
 	#if the solution space is not enough
-	def check_stuck(self,iteration):
+	def check_stuck(self, iteration):
 		if iteration > 0 and self.resultOfPrevBest == self.predictResult[self.eliteSet[0]]:
 			self.numberNoChange = self.numberNoChange + 1
 		else:
@@ -93,7 +99,7 @@ class Attacker():
 			self.effectBit = self.effectBit + 1
 			self.numberNoChange = 0
 
-	def check_success(self,iteration):
+	def check_success(self, iteration):
 		currentBest = self.eliteSet[0]
 		resultOfCurrentBest = self.predictResult[currentBest]
 		if resultOfCurrentBest == self.targetLabel:
@@ -109,7 +115,13 @@ class Attacker():
 		selectionProb = self.targetScore/np.sum(self.targetScore)	
 		return selectionProb
 
-	def run(self,quit):
+	def initialize_mtDNA(self):
+		temp = []
+		for i in range(self.processNumber * 100, self.processNumber * 100 + self.populationSize):
+			temp.append(i)
+		return temp
+
+	def run(self, quit):
 		self.maxIteration = 1000
 		self.populationSize = 50
 		self.eliteSize = 3
@@ -117,6 +129,8 @@ class Attacker():
 		self.population = []
 		for i in range(self.populationSize):
 			self.population.append(self.generate_first_population())
+
+		self.mtDNA = self.initialize_mtDNA()
 
 		self.numberNoChange = 0
 		self.resultOfPrevBest = 0
@@ -128,7 +142,7 @@ class Attacker():
 
 			self.calaulate_fitness()
 
-			#get the first k population which has highest target score ,k = elite size  
+			#get the first k population which has highest target score, k = elite size  
 			self.eliteSet = np.array(self.targetScore).argsort()[-self.eliteSize:][::-1]
 			self.check_stuck(iteration)
 			#update Prev best
@@ -141,12 +155,16 @@ class Attacker():
 				return result
 
 			selectionProb = self.calculate_selection_prob()
-			nextGeneration = self.crossover(selectionProb)
+			nextGeneration, nextGenerationMtDNA = self.crossover(selectionProb)
 			for i in self.eliteSet:
+				nextGenerationMtDNA = nextGenerationMtDNA + [self.mtDNA[i]]
 				nextGeneration = nextGeneration + [self.population[i]]
 
 			nextGeneration = self.mutation(nextGeneration)
 			self.population = nextGeneration
+			self.mtDNA = nextGenerationMtDNA
+			if iteration % 100 == 0:
+				self.mtDNA = self.initialize_mtDNA()
 
 
 	def print_stat(self):
