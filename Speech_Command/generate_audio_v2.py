@@ -7,7 +7,9 @@ import os
 
 def worker(i, quit, foundit,data,label,outputTensor,targetLabel,newWavPath):
 	print("%d started" % i)
-	with tf.Session() as sess:
+	config = tf.ConfigProto()
+	config.gpu_options.allow_growth = True
+	with tf.Session(config=config) as sess:
 		#newAudio = gen_attack(sess,data,label,outputTensor,targetLabel)
 		attack = Attacker(sess,data,label,outputTensor,targetLabel,os.getpid())
 		newAudio = attack.run(quit)
