@@ -3,14 +3,14 @@ import numpy as np
 import random
 
 class Attacker():
-	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processNumber, effectBit = 3):
+	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processorNumber, effectBit = 3):
 		self.sess = sess
 		self.data = data
 		self.label = label
 		self.outputTensor = outputTensor
 		self.targetLabel = targetLabel
 		self.effectBit = effectBit
-		self.processNumber = processNumber
+		self.processorNumber = processorNumber
 		np.random.seed(pId)
 
 	def generate_first_population(self):
@@ -118,7 +118,7 @@ class Attacker():
 
 	def initialize_mtDNA(self):
 		temp = []
-		for i in range(self.processNumber * 100, self.processNumber * 100 + self.populationSize):
+		for i in range(self.processorNumber * 100, self.processorNumber * 100 + self.populationSize):
 			temp.append(i)
 		return temp
 
@@ -173,6 +173,8 @@ class Attacker():
 	def print_stat(self):
 		currentBest = self.eliteSet[0]
 		resultOfCurrentBest = self.predictResult[currentBest]
+		print("Processor Number: %s" %(self.processorNumber))
+		print("Population Size: %s" %(self.populationSize))
 		print("target label:  %s" %(self.label[self.targetLabel]))
 		print("The predict result of target top 1 score population:  %s" %(self.label[resultOfCurrentBest]))
 		print("score of the predict result of target top 1 score population:  " ,end = '')
