@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
 	quit = mp.Event()
 	foundit = mp.Event()
-	for i in range(mp.cpu_count()):
+	for i in range(8):
 		p = mp.Process(target=worker, args=(i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath))
 		p.start()
 	foundit.wait()

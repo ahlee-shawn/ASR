@@ -124,10 +124,10 @@ class Attacker():
 
 	def run(self, quit):
 		self.maxIteration = 1000
-		self.populationSize = random.randint(20,50) #randomize population size
+		self.populationSize = int(np.random.normal(loc=35, scale=5, size=1)) # randomize population size
 		self.eliteSize = 3
-		self.mutationRate = np.random.normal(loc=0.0005, scale=0.0001, size=1)
-		self.crossoverRate = np.random.normal(loc=0.5, scale=0.1, size=1)
+		self.mutationRate = np.random.normal(loc=0.0005, scale=0.0001, size=1) # randomize mutation rate
+		self.crossoverRate = np.random.normal(loc=0.5, scale=0.1, size=1) # randomize crossover rate
 
 		self.population = []
 		for i in range(self.populationSize):
