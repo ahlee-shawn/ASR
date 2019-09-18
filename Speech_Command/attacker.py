@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import random
 
 class Attacker():
 	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processNumber, effectBit = 3):
@@ -27,9 +28,9 @@ class Attacker():
 	def _crossover(self, father, mother):
 		father = bytearray(father)
 		mother = bytearray(mother)
-		#let mother's byte = father's byte at 50%
+		#let mother's byte = father's byte at 50% #now: random crossoverRate
 		for i in range(44,len(father)):
-			if np.random.rand() < 0.5:
+			if np.random.rand() < self.crossoverRate:
 				mother[i] = father[i]
 
 		return bytes(mother)
@@ -54,7 +55,7 @@ class Attacker():
 		newBytesArray = bytearray(currentOffspring)
 		#plus random noise for every two bytes when np.random.rand() < 0.0005, 44 is the header length of wav file
 		for i in range(44,len(newBytesArray),2):
-			if np.random.rand() < 0.0005:
+			if np.random.rand() < self.mutationRate:
 				noise = int(np.random.choice(range(0, 2**self.effectBit)))
 				effectPart = newBytesArray[i+1] % (2**self.effectBit)
 				plusNoise = effectPart ^ noise
@@ -123,8 +124,10 @@ class Attacker():
 
 	def run(self, quit):
 		self.maxIteration = 1000
-		self.populationSize = 50
+		self.populationSize = random.randint(20,50) #randomize population size
 		self.eliteSize = 3
+		self.mutationRate = np.random.normal(loc=0.0005, scale=0.0001, size=1)
+		self.crossoverRate = np.random.normal(loc=0.5, scale=0.1, size=1)
 
 		self.population = []
 		for i in range(self.populationSize):
