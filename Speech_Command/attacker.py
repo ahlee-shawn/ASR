@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import random
+from multiprocessing import cpu_count
 
 class Attacker():
 	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processorNumber, effectBit = 3):
@@ -30,7 +31,7 @@ class Attacker():
 		mother = bytearray(mother)
 		#let mother's byte = father's byte at 50% #now: random crossoverRate
 		for i in range(44,len(father)):
-			if np.random.rand() < self.crossoverRate:
+			if np.random.rand() < 0.5:
 				mother[i] = father[i]
 
 		return bytes(mother)
@@ -55,7 +56,7 @@ class Attacker():
 		newBytesArray = bytearray(currentOffspring)
 		#plus random noise for every two bytes when np.random.rand() < 0.0005, 44 is the header length of wav file
 		for i in range(44,len(newBytesArray),2):
-			if np.random.rand() < self.mutationRate:
+			if np.random.rand() < 0.0005:
 				noise = int(np.random.choice(range(0, 2**self.effectBit)))
 				effectPart = newBytesArray[i+1] % (2**self.effectBit)
 				plusNoise = effectPart ^ noise
@@ -122,12 +123,12 @@ class Attacker():
 			temp.append(i)
 		return temp
 
-	def run(self, quit):
+	def run(self, dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, quit):
 		self.maxIteration = 1000
-		self.populationSize = int(np.random.normal(loc=35, scale=5, size=1)) # randomize population size
+		self.populationSize = 50 #int(np.random.normal(loc=35, scale=5, size=1)) # randomize population size
 		self.eliteSize = 3
-		self.mutationRate = np.random.normal(loc=0.0005, scale=0.0001, size=1) # randomize mutation rate
-		self.crossoverRate = np.random.normal(loc=0.5, scale=0.1, size=1) # randomize crossover rate
+		#self.mutationRate = np.random.normal(loc=0.0005, scale=0.00005, size=1) # randomize mutation rate
+		#self.crossoverRate = np.random.normal(loc=0.5, scale=0.05, size=1) # randomize crossover rate
 
 		self.population = []
 		for i in range(self.populationSize):
@@ -138,11 +139,7 @@ class Attacker():
 		self.numberNoChange = 0
 		self.resultOfPrevBest = 0
 
-		for iteration in range(self.maxIteration+1):
-			#One process has found the answer
-			if quit.is_set():
-				break
-
+		for iteration in range(self.maxIteration + 1):
 			self.calaulate_fitness()
 
 			#get the first k population which has highest target score, k = elite size  
@@ -157,6 +154,33 @@ class Attacker():
 			if stat == 0 or stat == 1:
 				return result
 
+			if iteration % 5 == 0:
+				# Get from queue and replace the one with least score
+				if not mtDNAQueue.empty():
+					self.loserIndex = self.targetScore.index(min(self.targetScore))
+					dataQueueLock.acquire()
+					newData = dataQueue.get()
+					dataQueueLock.release()
+					mtDNAQueueLock.acquire()
+					newMtDNA = mtDNAQueue.get()
+					mtDNAQueueLock.release()
+					self.population[self.loserIndex] = newData[0]
+					self.mtDNA[self.loserIndex] = newMtDNA[0]
+					'''
+					print("population Type: %s" %(len(self.population)))
+					print("newData Type: %s" %(newData))
+					print("mtDNA Type: %s" %(len(self.mtDNA)))
+					print("newMtDNA Type: %s" %(newMtDNA))
+					'''
+				# Put the highest score into queue
+				#if iteration % 10 == 0:
+				dataQueueLock.acquire()
+				mtDNAQueueLock.acquire()
+				dataQueue.put([self.population[self.eliteSet[0]]])
+				mtDNAQueue.put([self.mtDNA[self.eliteSet[0]]])
+				dataQueueLock.release()
+				mtDNAQueueLock.release()
+
 			selectionProb = self.calculate_selection_prob()
 			nextGeneration, nextGenerationMtDNA = self.crossover(selectionProb)
 			for i in self.eliteSet:
@@ -166,8 +190,12 @@ class Attacker():
 			nextGeneration = self.mutation(nextGeneration)
 			self.population = nextGeneration
 			self.mtDNA = nextGenerationMtDNA
-			if iteration % 100 == 0:
+
+			if iteration % 10 == 0:
 				self.mtDNA = self.initialize_mtDNA()
+			#One process has found the answer
+			if quit.is_set():
+				break
 
 
 	def print_stat(self):

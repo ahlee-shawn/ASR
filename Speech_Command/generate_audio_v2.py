@@ -5,14 +5,14 @@ from util import *
 from attacker import Attacker
 import os
 
-def worker(i, quit, foundit,data,label,outputTensor,targetLabel,newWavPath):
+def worker(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit,data,label,outputTensor,targetLabel,newWavPath):
 	print("%d started" % i)
 	config = tf.ConfigProto()
 	config.gpu_options.allow_growth = True
 	with tf.Session(config=config) as sess:
 		#newAudio = gen_attack(sess,data,label,outputTensor,targetLabel)
 		attack = Attacker(sess, data, label, outputTensor, targetLabel, os.getpid(), i)
-		newAudio = attack.run(quit)
+		newAudio = attack.run(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, quit)
 		foundit.set()
 		if newAudio != None:
 			store_wav(newWavPath,newAudio)
@@ -43,9 +43,17 @@ if __name__ == '__main__':
 
 	quit = mp.Event()
 	foundit = mp.Event()
-	for i in range(8):
-		p = mp.Process(target=worker, args=(i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath))
+	dataQueue = mp.Queue()
+	dataQueueLock = mp.Lock()
+	mtDNAQueue = mp.Queue()
+	mtDNAQueueLock = mp.Lock()
+
+	all_processes = []
+	for i in range(mp.cpu_count()): #for i in range(mp.cpu_count()):
+		p = mp.Process(target=worker, args=(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath))
 		p.start()
+		all_processes.append(p)
 	foundit.wait()
 	quit.set()
-		
+	for process in all_processes: 
+		process.terminate() 
