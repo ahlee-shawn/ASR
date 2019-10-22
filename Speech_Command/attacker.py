@@ -21,7 +21,10 @@ class Attacker():
 			if np.random.rand() < 0.0005:
 				noise = int(np.random.choice(range(0, 2**self.effectBit)))
 				effectPart = newBytesArray[i+1] % (2**self.effectBit)
-				newBytesArray[i+1] = newBytesArray[i+1] - effectPart + noise
+				if newBytesArray[i+1] - effectPart + noise < 0:
+					newBytesArray[i+1] = 0
+				else:
+					newBytesArray[i+1] = (newBytesArray[i+1] - effectPart + noise) % 256
 				
 		return bytes(newBytesArray)
 	    
@@ -58,7 +61,10 @@ class Attacker():
 			if np.random.rand() < 0.0005:
 				noise = int(np.random.choice(range(0, 2**self.effectBit)))
 				effectPart = newBytesArray[i+1] % (2**self.effectBit)
-				newBytesArray[i+1] = newBytesArray[i+1] - effectPart + noise
+				if newBytesArray[i+1] - effectPart + noise < 0:
+					newBytesArray[i+1] = 0
+				else:
+					newBytesArray[i+1] = (newBytesArray[i+1] - effectPart + noise) % 256
 	            
 		return bytes(newBytesArray)
 
