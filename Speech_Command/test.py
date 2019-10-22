@@ -7,9 +7,9 @@ import time
 def main():
 	elapsed_time = 0
 	with open('/home/leeanghsuan/Desktop/Speech_Command/success.csv') as success_csv:
-		success = np.asarray(list(csv.reader(success_csv))).reshape(50, 50).astype(float)
+		success = np.asarray(list(csv.reader(success_csv))).reshape(10, 10).astype(float)
 	with open('/home/leeanghsuan/Desktop/Speech_Command/iteration.csv') as iteration_csv:
-		iteration = np.asarray(list(csv.reader(iteration_csv))).reshape(50, 50).astype(float)
+		iteration = np.asarray(list(csv.reader(iteration_csv))).reshape(10, 10).astype(float)
 	with open('/home/leeanghsuan/Desktop/Speech_Command/time.txt', "r") as f:
 		elapsed_time = float(f.readline())
 
@@ -26,7 +26,7 @@ def main():
 					print("i = {}\tj = {}\tk = {}".format(i, j, k))
 					input_path = search_dir + "/" + file_list[k]
 					target_label = label[j]
-					ouput_path = "/home/leeanghsuan/Desktop/Speech_Command/" + source_label + "/" + target_label + "/" + str(success[i][j]) + ".wav"
+					ouput_path = "/home/leeanghsuan/Desktop/Speech_Command/" + source_label + "/" + target_label + "/" + str(int(success[i][j])) + ".wav"
 					command="python3 generate_audio_v2.py --wavPath " + input_path + " --newWavPath " + ouput_path + " --target " + target_label
 					start_time = time.time()
 					exit_code = os.system(command)
