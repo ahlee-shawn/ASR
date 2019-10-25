@@ -6,13 +6,13 @@ from attacker import Attacker
 import os
 import sys
 
-def worker(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit,data,label,outputTensor,targetLabel,newWavPath):
+def worker(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit, data, label, outputTensor, targetLabel, newWavPath, printFlag):
 	print("%d started" % i)
 	config = tf.ConfigProto()
 	config.gpu_options.allow_growth = True
 	with tf.Session(config=config) as sess:
 		#newAudio = gen_attack(sess,data,label,outputTensor,targetLabel)
-		attack = Attacker(sess, data, label, outputTensor, targetLabel, os.getpid(), i)
+		attack = Attacker(sess, data, label, outputTensor, targetLabel, os.getpid(), i, printFlag)
 		newAudio = attack.run(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, quit)
 		foundit.set()
 		if newAudio != None:
@@ -28,6 +28,7 @@ if __name__ == '__main__':
 		flags.DEFINE_string("newWavPath", "new_version_para.wav", "the new wav path")
 		flags.DEFINE_string("labelPath", "conv_labels.txt", "label path")
 		flags.DEFINE_string("target", "yes", "the target")
+		flags.DEFINE_string("printFlag", "1", "1 for print on command line")
 		FLAGS = flags.FLAGS
 
 		data = load_wav(FLAGS.wavPath)
@@ -52,7 +53,7 @@ if __name__ == '__main__':
 
 		all_processes = []
 		for i in range(4): #for i in range(mp.cpu_count()):
-			p = mp.Process(target=worker, args=(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath))
+			p = mp.Process(target=worker, args=(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath, FLAGS.printFlag))
 			p.start()
 			all_processes.append(p)
 		foundit.wait()

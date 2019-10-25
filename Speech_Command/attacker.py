@@ -4,7 +4,7 @@ import random
 from multiprocessing import cpu_count
 
 class Attacker():
-	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processorNumber, effectBit = 3):
+	def __init__(self, sess, data, label, outputTensor, targetLabel, pId, processorNumber, printFlag, effectBit = 3):
 		self.sess = sess
 		self.data = data
 		self.label = label
@@ -12,6 +12,7 @@ class Attacker():
 		self.targetLabel = targetLabel
 		self.effectBit = effectBit
 		self.processorNumber = processorNumber
+		self.printFlag = printFlag
 		np.random.seed(pId)
 
 	def generate_first_population(self):
@@ -110,12 +111,12 @@ class Attacker():
 		resultOfCurrentBest = self.predictResult[currentBest]
 		if resultOfCurrentBest == self.targetLabel:
 			print("success")
-			return self.population[currentBest],0
+			return self.population[currentBest], 0
 		elif iteration == self.maxIteration:
 			print("fail")
-			return self.population[currentBest],1
+			return self.population[currentBest], 1
 		else:
-			return self.population[currentBest],2
+			return self.population[currentBest], 2
 
 	def calculate_selection_prob(self):
 		selectionProb = self.targetScore/np.sum(self.targetScore)	
@@ -152,7 +153,8 @@ class Attacker():
 			#update Prev best
 			self.resultOfPrevBest = self.predictResult[self.eliteSet[0]]
 
-			self.print_stat()
+			if self.printFlag == 1:
+				self.print_stat()
 
 			result, stat = self.check_success(iteration)
 			if stat == 0 or stat == 1:
