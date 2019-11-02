@@ -52,7 +52,7 @@ if __name__ == '__main__':
 		mtDNAQueueLock = mp.Lock()
 
 		all_processes = []
-		for i in range(4): #for i in range(mp.cpu_count()):
+		for i in range(1): #for i in range(mp.cpu_count()):
 			p = mp.Process(target=worker, args=(dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, i, quit, foundit, data, label, outputTensor, targetLabel, FLAGS.newWavPath, FLAGS.printFlag))
 			p.start()
 			all_processes.append(p)

@@ -154,7 +154,7 @@ class Attacker():
 			#update Prev best
 			self.resultOfPrevBest = self.predictResult[self.eliteSet[0]]
 
-			if self.printFlag == 1:
+			if int(self.printFlag) == 1:
 				self.print_stat()
 
 			result, stat = self.check_success(iteration)
