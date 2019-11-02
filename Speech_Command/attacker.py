@@ -119,6 +119,7 @@ class Attacker():
 			return self.population[currentBest], 2
 
 	def calculate_selection_prob(self):
+		self.targetScore = np.exp(self.targetScore*100)
 		selectionProb = self.targetScore/np.sum(self.targetScore)	
 		return selectionProb
 
