@@ -58,7 +58,5 @@ if __name__ == '__main__':
 			all_processes.append(p)
 		foundit.wait()
 		quit.set()
-		for process in all_processes: 
-			process.terminate() 
 	except KeyboardInterrupt:
 		sys.exit(128)

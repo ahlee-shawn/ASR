@@ -131,7 +131,7 @@ class Attacker():
 		return temp
 
 	def run(self, dataQueue, dataQueueLock, mtDNAQueue, mtDNAQueueLock, quit):
-		self.maxIteration = 1000
+		self.maxIteration = 100
 		self.populationSize = 50 #int(np.random.normal(loc=35, scale=5, size=1)) # randomize population size
 		self.eliteSize = 3
 		#self.mutationRate = np.random.normal(loc=0.0005, scale=0.00005, size=1) # randomize mutation rate
