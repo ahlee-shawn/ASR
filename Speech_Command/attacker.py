@@ -160,7 +160,7 @@ class Attacker():
 
 			result, stat = self.check_success(iteration)
 			if stat == 0 or stat == 1:
-				return result
+				return result, stat
 
 			if iteration % 5 == 0:
 				# Get from queue and replace the one with least score
