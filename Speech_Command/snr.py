@@ -7,14 +7,14 @@ def readWav(path):
 	return data
 
 def SNR(originalWav, attackedWav):
-	signal = np.sum(originalWav ** 2)
-	noise = np.sum((originalWav - attackedWav) ** 2)
+	signal = np.sum(np.square(originalWav))
+	noise = np.sum(np.square(originalWav - attackedWav))
 	return 10 * np.log10(signal / noise)
 
 def calculateSNR(originalWavPath, attackedWavPath):
 	rate, originalWav = wavfile.read(originalWavPath)
 	rate, attackedWav = wavfile.read(attackedWavPath)
-	snr = SNR(originalWav, attackedWav)
+	snr = SNR(originalWav.astype('d'), attackedWav.astype('d'))
 	return snr
 
 if __name__ == '__main__':
