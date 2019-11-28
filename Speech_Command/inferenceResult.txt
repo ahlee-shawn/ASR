@@ -1,0 +1,10 @@
+/home/leeanghsuan/Downloads/myOwnVoice/yes.wav with label 'yes' -> Inference Result: yes
+/home/leeanghsuan/Downloads/myOwnVoice/no.wav with label 'no' -> Inference Result: no
+/home/leeanghsuan/Downloads/myOwnVoice/up.wav with label 'up' -> Inference Result: up
+/home/leeanghsuan/Downloads/myOwnVoice/down.wav with label 'down' -> Inference Result: down
+/home/leeanghsuan/Downloads/myOwnVoice/left.wav with label 'left' -> Inference Result: left
+/home/leeanghsuan/Downloads/myOwnVoice/right.wav with label 'right' -> Inference Result: right
+/home/leeanghsuan/Downloads/myOwnVoice/on.wav with label 'on' -> Inference Result: on
+/home/leeanghsuan/Downloads/myOwnVoice/off.wav with label 'off' -> Inference Result: off
+/home/leeanghsuan/Downloads/myOwnVoice/stop.wav with label 'stop' -> Inference Result: stop
+/home/leeanghsuan/Downloads/myOwnVoice/go.wav with label 'go' -> Inference Result: go
