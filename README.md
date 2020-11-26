@@ -1,8 +1,13 @@
 This repository is the implementation of [1] with our improvement. 
+
 It can generate the targeted adversarial attack audio for Google Speech Command Model.
+
 The generated audio has less SNR and larger success rate compared to the original implementation.
+
 The generated audio can affect other automatic speech recognization system according to our experiments.
+
 Our improvement focuses on the Genetic Algorithm, which is the main algorithm that we use to generate noise.
+
 We also use Labview to offer an API to interact with our server to calculate the results.
 
 For more details, you can refer to
